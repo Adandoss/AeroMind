@@ -20,6 +20,8 @@ services:
     container_name: aeromind-web
     environment:
       DATABASE_URL: mysql://root:aeromind_root@db:3306/aeromind
+      AUTH_SECRET: ${AUTH_SECRET:-f69e6b4e4e93090956b9c9f7a7d4a234f9a3f2b4c10a439281a1a2b3c4d5e6f7}
+      AUTH_TRUST_HOST: "true"
     ports:
       - "3000:3000"
     depends_on:
