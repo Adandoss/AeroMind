@@ -60,3 +60,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+export async function checkAdmin() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Authentication required", status: 401 };
+  }
+  if (session.user.role !== "ADMIN") {
+    return { error: "Access denied. Admin role required.", status: 403 };
+  }
+  return { ok: true };
+}
