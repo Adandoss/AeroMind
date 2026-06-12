@@ -14,7 +14,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-body {
-  background: #ffffff;
-  color: var(--color-ink);
+:root {
+  color-scheme: light !important;
 }
+
+html, body {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: var(--color-ink) !important;
+}
+

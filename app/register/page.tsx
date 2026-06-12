@@ -77,7 +77,7 @@ export default function RegisterPage() {
                 id="name"
                 type="text"
                 autoComplete="name"
-                className={`mt-1 block w-full rounded border px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
+                className={`mt-1 block w-full rounded border bg-white text-zinc-900 px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
                   errors.name ? "border-red-300 focus:border-red-500" : "border-zinc-300"
                 }`}
                 placeholder="Ada Admin"
@@ -99,7 +99,7 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 autoComplete="email"
-                className={`mt-1 block w-full rounded border px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
+                className={`mt-1 block w-full rounded border bg-white text-zinc-900 px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
                   errors.email ? "border-red-300 focus:border-red-500" : "border-zinc-300"
                 }`}
                 placeholder="you@example.com"
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 autoComplete="new-password"
-                className={`mt-1 block w-full rounded border px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
+                className={`mt-1 block w-full rounded border bg-white text-zinc-900 px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
                   errors.password ? "border-red-300 focus:border-red-500" : "border-zinc-300"
                 }`}
                 placeholder="••••••••"
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                 id="confirmPassword"
                 type="password"
                 autoComplete="new-password"
-                className={`mt-1 block w-full rounded border px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
+                className={`mt-1 block w-full rounded border bg-white text-zinc-900 px-3 py-2 text-sm outline-none transition-colors focus:border-primary ${
                   errors.confirmPassword
                     ? "border-red-300 focus:border-red-500"
                     : "border-zinc-300"

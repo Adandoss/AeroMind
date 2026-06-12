@@ -180,7 +180,7 @@ export function CatalogClient({ initialFilters }: CatalogClientProps) {
                 placeholder="Search courses..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="w-full border border-zinc-200 px-4 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+                className="w-full border border-zinc-200 bg-white text-zinc-900 px-4 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
               />
               {q && (
                 <button
