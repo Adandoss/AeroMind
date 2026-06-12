@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Category } from "@/generated/prisma/client";
+import { Category } from "@/lib/types/enums";
 
 export const CoursesQuerySchema = z.object({
   q: z.string().optional().default(""),

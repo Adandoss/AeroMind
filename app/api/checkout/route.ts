@@ -19,6 +19,14 @@ export const POST = withLogging(async (req: NextRequest) => {
     return Response.json({ error: "Authentication required" }, { status: 401 });
   }
 
+  // Verify user exists in database
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    return Response.json({ error: "User not found in database" }, { status: 401 });
+  }
+
   // Parse request body
   let body;
   try {

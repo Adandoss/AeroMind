@@ -12,10 +12,14 @@ export const GET = withLogging(async (req: NextRequest) => {
   }
 
   // 1. Fetch user basics
-  const user = await prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { name: true, email: true },
   });
+
+  if (!user) {
+    return Response.json({ error: "User not found in database" }, { status: 401 });
+  }
 
   // 2. Fetch active subscription
   const subscription = await prisma.subscription.findFirst({

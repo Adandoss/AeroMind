@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Plan } from "@/generated/prisma/client";
+import { Plan } from "@/lib/types/enums";
 
 export const CheckoutSchema = z.object({
   plan: z.nativeEnum(Plan, { message: "Invalid subscription plan selection" }),
