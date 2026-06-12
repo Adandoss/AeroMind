@@ -13,6 +13,7 @@
 # testing
 /coverage
 docs/
+!app/docs
 .cursor/
 
 # next.js
