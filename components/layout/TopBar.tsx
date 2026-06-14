@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/lib/server/auth";
-import { logoutAction } from "@/app/actions/auth";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 const navLinks = [
   { href: "/courses", label: "Courses" },
@@ -53,14 +53,7 @@ export async function TopBar() {
               <span className="text-sm text-zinc-600 hidden md:inline">
                 {session.user.name}
               </span>
-              <form action={logoutAction}>
-                <button
-                  type="submit"
-                  className="rounded border border-zinc-300 px-4 py-2 text-sm font-medium transition-colors hover:bg-zinc-50 cursor-pointer"
-                >
-                  Sign Out
-                </button>
-              </form>
+              <SignOutButton className="rounded border border-zinc-300 px-4 py-2 text-sm font-medium transition-colors hover:bg-zinc-50 cursor-pointer" />
             </>
           ) : (
             <>

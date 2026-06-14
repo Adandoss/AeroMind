@@ -4,13 +4,16 @@ import { useAdminCourse, useCreateLesson, useUpdateLesson, useDeleteLesson } fro
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminLessonSchema, AdminLessonInput } from "@/lib/schemas/courses";
-import { useState, useEffect } from "react";
+import { z } from "zod";
+import { useState } from "react";
 import Link from "next/link";
 
 interface AdminLessonsListProps {
   courseId: string;
   moduleId: string;
 }
+
+type AdminLessonFormInput = z.input<typeof AdminLessonSchema>;
 
 export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) {
   const { data: course, isLoading, isError } = useAdminCourse(courseId);
@@ -21,78 +24,35 @@ export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) 
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
 
-  // React Hook Form for creation & editing (in the sidebar)
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(AdminLessonSchema),
-    defaultValues: {
-      moduleId,
-      title: "",
-      content: "",
-      durationMin: 10,
-      order: 1,
-      isFreePreview: false,
-    },
-  });
-
   const targetModule = course?.modules?.find((m: any) => m.id === moduleId);
   const lessons = targetModule?.lessons || [];
+  const editingLesson = editingLessonId
+    ? lessons.find((lesson: any) => lesson.id === editingLessonId)
+    : null;
 
   // Sync edit mode fields
   const handleStartEdit = (lesson: any) => {
     setEditingLessonId(lesson.id);
     setActionError("");
-    setValue("title", lesson.title);
-    setValue("content", lesson.content);
-    setValue("durationMin", lesson.durationMin);
-    setValue("order", lesson.order);
-    setValue("isFreePreview", lesson.isFreePreview);
   };
 
   const handleCancelEdit = () => {
     setEditingLessonId(null);
-    reset({
-      moduleId,
-      title: "",
-      content: "",
-      durationMin: 10,
-      order: lessons.length + 2,
-      isFreePreview: false,
-    });
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: AdminLessonInput) => {
     setActionError("");
     try {
       if (editingLessonId) {
         // Update mode
         await updateLessonMutation.mutateAsync({
           id: editingLessonId,
-          data: {
-            title: data.title,
-            content: data.content,
-            durationMin: data.durationMin,
-            order: data.order,
-            isFreePreview: data.isFreePreview,
-          },
+          data,
         });
         handleCancelEdit();
       } else {
         // Create mode
         await createLessonMutation.mutateAsync(data);
-        reset({
-          moduleId,
-          title: "",
-          content: "",
-          durationMin: 10,
-          order: lessons.length + 2,
-          isFreePreview: false,
-        });
       }
     } catch (err: any) {
       setActionError(err.message || "Failed to save lesson");
@@ -113,13 +73,6 @@ export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) 
       setActionError(err.message || "Failed to delete lesson");
     }
   };
-
-  // Set initial order suggest when course loaded
-  useEffect(() => {
-    if (lessons.length > 0 && !editingLessonId) {
-      setValue("order", lessons.length + 1);
-    }
-  }, [lessons.length, editingLessonId, setValue]);
 
   if (isLoading) {
     return (
@@ -231,113 +184,163 @@ export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) 
         </div>
 
         {/* Create/Edit Lesson Form Sidebar */}
-        <aside className="border border-zinc-200 bg-white p-6 sticky top-6">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-4">
-            {editingLessonId ? "Edit Lesson" : "Add Lesson"}
-          </h2>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            <div>
-              <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
-                Lesson Title
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Setting up your Workspace"
-                {...register("title")}
-                className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none"
-              />
-              {errors.title && (
-                <p className="text-[10px] text-red-500 mt-1">{errors.title.message}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
-                  Order Value
-                </label>
-                <input
-                  type="number"
-                  placeholder="e.g. 1"
-                  {...register("order")}
-                  className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none"
-                />
-                {errors.order && (
-                  <p className="text-[10px] text-red-500 mt-1">{errors.order.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
-                  Duration (min)
-                </label>
-                <input
-                  type="number"
-                  placeholder="e.g. 10"
-                  {...register("durationMin")}
-                  className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none"
-                />
-                {errors.durationMin && (
-                  <p className="text-[10px] text-red-500 mt-1">{errors.durationMin.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
-                Lesson Content (Markdown Supported)
-              </label>
-              <textarea
-                rows={6}
-                placeholder="Write lesson text or paste markdown content..."
-                {...register("content")}
-                className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none font-mono"
-              />
-              {errors.content && (
-                <p className="text-[10px] text-red-500 mt-1">{errors.content.message}</p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 mt-1">
-              <input
-                type="checkbox"
-                id="isFreePreview"
-                {...register("isFreePreview")}
-                className="h-3.5 w-3.5 border-zinc-300 text-primary focus:ring-primary"
-              />
-              <label
-                htmlFor="isFreePreview"
-                className="text-[10px] font-semibold text-zinc-500 hover:text-zinc-800 cursor-pointer"
-              >
-                Enable free lesson preview
-              </label>
-            </div>
-
-            <div className="flex gap-2 mt-2">
-              {editingLessonId && (
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="flex-1 py-2 border border-zinc-200 text-center text-xs font-bold uppercase tracking-wider text-zinc-600 hover:bg-zinc-50 transition-colors"
-                >
-                  Cancel
-                </button>
-              )}
-              <button
-                type="submit"
-                disabled={createLessonMutation.isPending || updateLessonMutation.isPending}
-                className="flex-1 py-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
-              >
-                {createLessonMutation.isPending || updateLessonMutation.isPending
-                  ? "Saving..."
-                  : editingLessonId
-                  ? "Save Edit"
-                  : "Add Lesson"}
-              </button>
-            </div>
-          </form>
-        </aside>
+        <LessonEditorForm
+          key={editingLesson?.id ?? `new-${lessons.length}`}
+          mode={editingLesson ? "edit" : "create"}
+          initialValues={
+            editingLesson
+              ? {
+                  moduleId,
+                  title: editingLesson.title ?? "",
+                  content: editingLesson.content ?? "",
+                  durationMin: editingLesson.durationMin,
+                  order: editingLesson.order,
+                  isFreePreview: editingLesson.isFreePreview,
+                }
+              : {
+                  moduleId,
+                  title: "",
+                  content: "",
+                  durationMin: 10,
+                  order: lessons.length + 1,
+                  isFreePreview: false,
+                }
+          }
+          isSubmitting={createLessonMutation.isPending || updateLessonMutation.isPending}
+          onCancel={handleCancelEdit}
+          onSubmit={onSubmit}
+        />
       </div>
     </div>
+  );
+}
+
+function LessonEditorForm({
+  mode,
+  initialValues,
+  isSubmitting,
+  onCancel,
+  onSubmit,
+}: {
+  mode: "create" | "edit";
+  initialValues: AdminLessonInput;
+  isSubmitting: boolean;
+  onCancel: () => void;
+  onSubmit: (data: AdminLessonInput) => Promise<void>;
+}) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AdminLessonFormInput, unknown, AdminLessonInput>({
+    resolver: zodResolver(AdminLessonSchema),
+    defaultValues: initialValues,
+  });
+
+  return (
+    <aside className="border border-zinc-200 bg-white p-6 sticky top-6">
+      <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-4">
+        {mode === "edit" ? "Edit Lesson" : "Add Lesson"}
+      </h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <input type="hidden" {...register("moduleId")} />
+
+        <div>
+          <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+            Lesson Title
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Setting up your Workspace"
+            {...register("title")}
+            className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none"
+          />
+          {errors.title && (
+            <p className="text-[10px] text-red-500 mt-1">{errors.title.message}</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+              Order Value
+            </label>
+            <input
+              type="number"
+              placeholder="e.g. 1"
+              {...register("order")}
+              className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none"
+            />
+            {errors.order && (
+              <p className="text-[10px] text-red-500 mt-1">{errors.order.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+              Duration (min)
+            </label>
+            <input
+              type="number"
+              placeholder="e.g. 10"
+              {...register("durationMin")}
+              className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none"
+            />
+            {errors.durationMin && (
+              <p className="text-[10px] text-red-500 mt-1">{errors.durationMin.message}</p>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">
+            Lesson Content (Markdown Supported)
+          </label>
+          <textarea
+            rows={6}
+            placeholder="Write lesson text or paste markdown content..."
+            {...register("content")}
+            className="w-full border border-zinc-200 px-3 py-2 text-xs focus:border-primary focus:outline-none font-mono"
+          />
+          {errors.content && (
+            <p className="text-[10px] text-red-500 mt-1">{errors.content.message}</p>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 mt-1">
+          <input
+            type="checkbox"
+            id="isFreePreview"
+            {...register("isFreePreview")}
+            className="h-3.5 w-3.5 border-zinc-300 text-primary focus:ring-primary"
+          />
+          <label
+            htmlFor="isFreePreview"
+            className="text-[10px] font-semibold text-zinc-500 hover:text-zinc-800 cursor-pointer"
+          >
+            Enable free lesson preview
+          </label>
+        </div>
+
+        <div className="flex gap-2 mt-2">
+          {mode === "edit" && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 py-2 border border-zinc-200 text-center text-xs font-bold uppercase tracking-wider text-zinc-600 hover:bg-zinc-50 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 py-2 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+          >
+            {isSubmitting ? "Saving..." : mode === "edit" ? "Save Edit" : "Add Lesson"}
+          </button>
+        </div>
+      </form>
+    </aside>
   );
 }

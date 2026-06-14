@@ -68,6 +68,7 @@ export function AdminModulesList({ courseId }: AdminModulesListProps) {
       await updateModuleMutation.mutateAsync({
         id,
         data: {
+          courseId,
           title: editTitle,
           order: editOrder,
         },

@@ -2,10 +2,9 @@ import { AdminCourseInput, AdminModuleInput, AdminLessonInput } from "@/lib/sche
 
 // Course Actions
 export async function adminFetchCourses() {
-  const res = await fetch("/api/courses?limit=100");
+  const res = await fetch("/api/admin/courses");
   if (!res.ok) throw new Error("Failed to fetch admin courses");
-  const data = await res.json();
-  return data.courses || [];
+  return res.json();
 }
 
 export async function adminFetchCourse(id: string) {
@@ -63,7 +62,7 @@ export async function adminCreateModule(data: AdminModuleInput) {
   return res.json();
 }
 
-export async function adminUpdateModule(id: string, data: Omit<AdminModuleInput, "courseId">) {
+export async function adminUpdateModule(id: string, data: AdminModuleInput) {
   const res = await fetch(`/api/admin/modules/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -99,7 +98,7 @@ export async function adminCreateLesson(data: AdminLessonInput) {
   return res.json();
 }
 
-export async function adminUpdateLesson(id: string, data: Omit<AdminLessonInput, "moduleId">) {
+export async function adminUpdateLesson(id: string, data: AdminLessonInput) {
   const res = await fetch(`/api/admin/lessons/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

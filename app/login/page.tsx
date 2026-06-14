@@ -4,14 +4,17 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LoginSchema, LoginInput } from "@/lib/schemas/auth";
 import { loginAction } from "@/app/actions/auth";
+import { clearAuthQueries } from "@/lib/query-client";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const {
     register,
@@ -28,7 +31,12 @@ export default function LoginPage() {
     try {
       const res = await loginAction(data);
       if (res.success) {
-        router.push("/dashboard");
+        clearAuthQueries();
+        const destination =
+          callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+            ? callbackUrl
+            : "/dashboard";
+        router.push(destination);
         router.refresh();
       } else {
         setError(res.error || "Invalid credentials.");

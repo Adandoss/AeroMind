@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RegisterSchema, RegisterInput } from "@/lib/schemas/auth";
 import { registerAction } from "@/app/actions/auth";
+import { clearAuthQueries } from "@/lib/query-client";
 
 export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function RegisterPage() {
     try {
       const res = await registerAction(data);
       if (res.success) {
+        clearAuthQueries();
         router.push("/dashboard");
         router.refresh();
       } else {

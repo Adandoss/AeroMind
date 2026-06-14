@@ -6,6 +6,20 @@ export const authConfig = {
     signIn: "/login",
   },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.role = token.role as "STUDENT" | "ADMIN";
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
@@ -24,7 +38,8 @@ export const authConfig = {
         return false; // Redirect unauthenticated users to login page
       } else if (isLoggedIn && (nextUrl.pathname === "/login" || nextUrl.pathname === "/register")) {
         // Redirect logged-in users away from auth pages to dashboard
-        return Response.redirect(new URL("/dashboard", nextUrl));
+        const destination = auth.user?.role === "ADMIN" ? "/admin/courses" : "/dashboard";
+        return Response.redirect(new URL(destination, nextUrl));
       }
       return true;
     },

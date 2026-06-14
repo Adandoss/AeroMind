@@ -68,7 +68,7 @@ export function useCreateModule(courseId: string) {
 export function useUpdateModule(courseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Omit<AdminModuleInput, "courseId"> }) =>
+    mutationFn: ({ id, data }: { id: string; data: AdminModuleInput }) =>
       adminApi.adminUpdateModule(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "course", courseId] });
@@ -103,7 +103,7 @@ export function useCreateLesson(courseId: string) {
 export function useUpdateLesson(courseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Omit<AdminLessonInput, "moduleId"> }) =>
+    mutationFn: ({ id, data }: { id: string; data: AdminLessonInput }) =>
       adminApi.adminUpdateLesson(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "course", courseId] });
