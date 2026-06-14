@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminCourseSchema, AdminCourseInput } from "@/lib/schemas/courses";
 import { Category } from "@/lib/types/enums";
@@ -9,7 +9,7 @@ import { useEffect } from "react";
 
 interface CourseFormProps {
   initialData?: Partial<AdminCourseInput>;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: AdminCourseInput) => void;
   isSubmitting: boolean;
   error?: string;
   title: string;
@@ -20,7 +20,7 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, error, title }
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AdminCourseSchema),
@@ -37,7 +37,7 @@ export function CourseForm({ initialData, onSubmit, isSubmitting, error, title }
     },
   });
 
-  const watchTitle = watch("title");
+  const watchTitle = useWatch({ control, name: "title" });
 
   // Suggest slug from title for new courses
   useEffect(() => {

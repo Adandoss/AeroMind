@@ -2,10 +2,14 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/server/auth";
 import { logger } from "./logger";
 
-type RouteHandler = (req: NextRequest, ctx: any) => Promise<Response> | Response;
+type RouteHandler<TCtx = undefined> = TCtx extends undefined
+  ? (req: NextRequest) => Promise<Response> | Response
+  : (req: NextRequest, ctx: TCtx) => Promise<Response> | Response;
 
-export function withLogging(handler: RouteHandler): RouteHandler {
-  return async (req: NextRequest, ctx: any) => {
+export function withLogging<TCtx = undefined>(
+  handler: RouteHandler<TCtx>
+): RouteHandler<TCtx> {
+  const wrapped = async (req: NextRequest, ctx?: TCtx) => {
     const startTime = performance.now();
     const session = await auth();
     const userId = session?.user?.id || "anonymous";
@@ -14,7 +18,9 @@ export function withLogging(handler: RouteHandler): RouteHandler {
     const method = req.method;
 
     try {
-      const response = await handler(req, ctx);
+      const response = await (
+        handler as (req: NextRequest, ctx?: TCtx) => Promise<Response> | Response
+      )(req, ctx);
       const durationMs = Math.round(performance.now() - startTime);
 
       logger.info({
@@ -28,14 +34,14 @@ export function withLogging(handler: RouteHandler): RouteHandler {
       });
 
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const durationMs = Math.round(performance.now() - startTime);
       logger.error({
         msg: "HTTP request failed",
         method,
         path,
-        error: error.message || error,
-        stack: error.stack,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
         durationMs,
         userId,
         userRole,
@@ -47,4 +53,6 @@ export function withLogging(handler: RouteHandler): RouteHandler {
       );
     }
   };
+
+  return wrapped as RouteHandler<TCtx>;
 }

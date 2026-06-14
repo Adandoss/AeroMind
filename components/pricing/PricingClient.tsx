@@ -7,6 +7,7 @@ import { CheckoutSchema, CheckoutInput } from "@/lib/schemas/checkout";
 import { processCheckout } from "@/lib/api/checkout";
 import { useRouter } from "next/navigation";
 import { Plan } from "@/lib/types/enums";
+import { getErrorMessage } from "@/lib/types/api";
 
 export function PricingClient() {
   const router = useRouter();
@@ -52,11 +53,12 @@ export function PricingClient() {
         router.push("/dashboard");
         router.refresh();
       }, 2000);
-    } catch (err: any) {
-      if (err.message.includes("401") || err.message.toLowerCase().includes("authentication")) {
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Simulated payment failed. Please check card info.");
+      if (message.includes("401") || message.toLowerCase().includes("authentication")) {
         router.push(`/login?callbackUrl=/pricing`);
       } else {
-        setCheckoutError(err.message || "Simulated payment failed. Please check card info.");
+        setCheckoutError(message);
       }
     } finally {
       setIsSubmitting(false);

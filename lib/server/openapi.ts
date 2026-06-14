@@ -1,12 +1,17 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
+import type { z } from "zod";
 import { CoursesQuerySchema, AdminCourseSchema, AdminModuleSchema, AdminLessonSchema } from "@/lib/schemas/courses";
 import { CheckoutSchema } from "@/lib/schemas/checkout";
 import { EnrollmentCreateSchema } from "@/lib/schemas/enrollments";
 import { LoginSchema, RegisterSchema } from "@/lib/schemas/auth";
 
 // Remove top-level schema attributes not compliant with OpenAPI 3.0 specs
-function toOpenApiSchema(zodSchema: any) {
-  const schema = zodToJsonSchema(zodSchema, { target: "openApi3" }) as any;
+function toOpenApiSchema(zodSchema: z.ZodType) {
+  const schema = zodToJsonSchema(
+    // zod-to-json-schema types target Zod 3; Zod 4 schemas are compatible at runtime.
+    zodSchema as unknown as Parameters<typeof zodToJsonSchema>[0],
+    { target: "openApi3" }
+  ) as Record<string, unknown>;
   delete schema.$schema;
   return schema;
 }

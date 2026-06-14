@@ -4,6 +4,7 @@ import { useAdminCourse, useCreateLesson, useUpdateLesson, useDeleteLesson } fro
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminLessonSchema, AdminLessonInput } from "@/lib/schemas/courses";
+import { getErrorMessage, type AdminLesson, type AdminModule } from "@/lib/types/api";
 import { z } from "zod";
 import { useState } from "react";
 import Link from "next/link";
@@ -24,14 +25,14 @@ export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) 
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
 
-  const targetModule = course?.modules?.find((m: any) => m.id === moduleId);
+  const targetModule = course?.modules?.find((m: AdminModule) => m.id === moduleId);
   const lessons = targetModule?.lessons || [];
   const editingLesson = editingLessonId
-    ? lessons.find((lesson: any) => lesson.id === editingLessonId)
+    ? lessons.find((lesson: AdminLesson) => lesson.id === editingLessonId)
     : null;
 
   // Sync edit mode fields
-  const handleStartEdit = (lesson: any) => {
+  const handleStartEdit = (lesson: AdminLesson) => {
     setEditingLessonId(lesson.id);
     setActionError("");
   };
@@ -54,8 +55,8 @@ export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) 
         // Create mode
         await createLessonMutation.mutateAsync(data);
       }
-    } catch (err: any) {
-      setActionError(err.message || "Failed to save lesson");
+    } catch (err: unknown) {
+      setActionError(getErrorMessage(err, "Failed to save lesson"));
     }
   };
 
@@ -69,8 +70,8 @@ export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) 
       if (editingLessonId === id) {
         handleCancelEdit();
       }
-    } catch (err: any) {
-      setActionError(err.message || "Failed to delete lesson");
+    } catch (err: unknown) {
+      setActionError(getErrorMessage(err, "Failed to delete lesson"));
     }
   };
 
@@ -127,7 +128,7 @@ export function AdminLessonsList({ courseId, moduleId }: AdminLessonsListProps) 
           ) : (
             <div className="border border-zinc-200 bg-white shadow-sm overflow-hidden">
               <div className="flex flex-col divide-y divide-zinc-100">
-                {lessons.map((lesson: any) => {
+                {lessons.map((lesson: AdminLesson) => {
                   const isEditingThis = editingLessonId === lesson.id;
                   return (
                     <div

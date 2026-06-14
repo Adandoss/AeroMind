@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
-import { auth, checkAdmin } from "@/lib/server/auth";
+import { checkAdmin } from "@/lib/server/auth";
 import { AdminModuleSchema } from "@/lib/schemas/courses";
 
 export const POST = withLogging(async (req: NextRequest) => {
@@ -13,7 +13,7 @@ export const POST = withLogging(async (req: NextRequest) => {
   let body;
   try {
     body = await req.json();
-  } catch (err) {
+  } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 

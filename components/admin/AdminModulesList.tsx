@@ -4,6 +4,7 @@ import { useAdminCourse, useCreateModule, useUpdateModule, useDeleteModule } fro
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminModuleSchema, AdminModuleInput } from "@/lib/schemas/courses";
+import { getErrorMessage, type AdminModule } from "@/lib/types/api";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -37,7 +38,7 @@ export function AdminModulesList({ courseId }: AdminModulesListProps) {
     },
   });
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: AdminModuleInput) => {
     setActionError("");
     try {
       await createModuleMutation.mutateAsync(data);
@@ -46,12 +47,12 @@ export function AdminModulesList({ courseId }: AdminModulesListProps) {
         title: "",
         order: (course?.modules?.length || 0) + 2, // Suggest next order
       });
-    } catch (err: any) {
-      setActionError(err.message || "Failed to create module");
+    } catch (err: unknown) {
+      setActionError(getErrorMessage(err, "Failed to create module"));
     }
   };
 
-  const handleStartEdit = (mod: any) => {
+  const handleStartEdit = (mod: AdminModule) => {
     setEditingModuleId(mod.id);
     setEditTitle(mod.title);
     setEditOrder(mod.order);
@@ -74,8 +75,8 @@ export function AdminModulesList({ courseId }: AdminModulesListProps) {
         },
       });
       setEditingModuleId(null);
-    } catch (err: any) {
-      setActionError(err.message || "Failed to update module");
+    } catch (err: unknown) {
+      setActionError(getErrorMessage(err, "Failed to update module"));
     }
   };
 
@@ -86,8 +87,8 @@ export function AdminModulesList({ courseId }: AdminModulesListProps) {
     setActionError("");
     try {
       await deleteModuleMutation.mutateAsync(id);
-    } catch (err: any) {
-      setActionError(err.message || "Failed to delete module");
+    } catch (err: unknown) {
+      setActionError(getErrorMessage(err, "Failed to delete module"));
     }
   };
 
@@ -144,7 +145,7 @@ export function AdminModulesList({ courseId }: AdminModulesListProps) {
           ) : (
             <div className="border border-zinc-200 bg-white shadow-sm overflow-hidden">
               <div className="flex flex-col divide-y divide-zinc-100">
-                {modules.map((mod: any) => (
+                {modules.map((mod: AdminModule) => (
                   <div
                     key={mod.id}
                     className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs"

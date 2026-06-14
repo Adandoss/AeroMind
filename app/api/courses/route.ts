@@ -2,13 +2,15 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
 import { CoursesQuerySchema } from "@/lib/schemas/courses";
+import type { Category } from "@/lib/types/enums";
+import type { CourseWhereFilter } from "@/lib/types/api";
 import { auth } from "@/lib/server/auth";
 import { cacheLife } from "next/cache";
 
 // Helper function with 'use cache' directive for catalog data caching
 async function getCoursesCached(params: {
   q?: string;
-  category?: any;
+  category?: Category;
   price?: string;
   rating?: number;
   page: number;
@@ -20,7 +22,7 @@ async function getCoursesCached(params: {
   const { q, category, price, rating, page, limit } = params;
   const skip = (page - 1) * limit;
 
-  const where: any = { published: true };
+  const where: CourseWhereFilter = { published: true };
   
   if (q) {
     where.OR = [

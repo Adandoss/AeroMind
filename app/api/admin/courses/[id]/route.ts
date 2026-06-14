@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
-import { auth, checkAdmin } from "@/lib/server/auth";
+import { checkAdmin } from "@/lib/server/auth";
 import { AdminCourseSchema } from "@/lib/schemas/courses";
 
 export const GET = withLogging(async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
@@ -52,7 +52,7 @@ export const PUT = withLogging(async (req: NextRequest, ctx: { params: Promise<{
   let body;
   try {
     body = await req.json();
-  } catch (err) {
+  } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 

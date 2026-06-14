@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { CoursesQuerySchema, AdminCourseSchema, AdminModuleSchema, AdminLessonSchema } from "@/lib/schemas/courses";
 import { CheckoutSchema } from "@/lib/schemas/checkout";
 import { EnrollmentCreateSchema } from "@/lib/schemas/enrollments";
-import { Category, Plan } from "@/generated/prisma/client";
+import { Category } from "@/generated/prisma/client";
 
 describe("CoursesQuerySchema", () => {
   it("should validate empty query params with default values", () => {

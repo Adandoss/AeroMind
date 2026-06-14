@@ -42,7 +42,7 @@ export default function LoginPage() {
         setError(res.error || "Invalid credentials.");
         setLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }

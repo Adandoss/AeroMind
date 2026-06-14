@@ -34,7 +34,7 @@ export async function registerAction(data: unknown) {
     });
 
     // Sign the user in immediately after successful registration
-    const result = await signIn("credentials", {
+    await signIn("credentials", {
       email,
       password,
       redirect: false,

@@ -31,7 +31,7 @@ export const POST = withLogging(async (req: NextRequest) => {
   let body;
   try {
     body = await req.json();
-  } catch (err) {
+  } catch {
     return Response.json({ error: "Invalid JSON request body" }, { status: 400 });
   }
 

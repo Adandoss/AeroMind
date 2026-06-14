@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { CourseCard } from "./CourseCard";
 import { useCourses } from "@/lib/hooks/useCourses";
 import { Category } from "@/lib/types/enums";
+import type { CourseListItem } from "@/lib/types/api";
 
 interface CatalogClientProps {
   initialFilters: {
@@ -19,7 +20,6 @@ interface CatalogClientProps {
 export function CatalogClient({ initialFilters }: CatalogClientProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   // State management
   const [q, setQ] = useState(initialFilters.q || "");
@@ -217,7 +217,7 @@ export function CatalogClient({ initialFilters }: CatalogClientProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {courses.map((course: any) => (
+              {courses.map((course: CourseListItem) => (
                 <CourseCard
                   key={course.id}
                   slug={course.slug}

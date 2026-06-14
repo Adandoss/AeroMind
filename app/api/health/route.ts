@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
 import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
 
-export const GET = withLogging(async (_req: NextRequest) => {
+export const GET = withLogging(async () => {
   try {
     // Ping DB
     await prisma.user.count();
@@ -14,12 +13,12 @@ export const GET = withLogging(async (_req: NextRequest) => {
       version: "0.1.0",
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return Response.json(
       {
         status: "DOWN",
         database: "DISCONNECTED",
-        error: error.message || error,
+        error: error instanceof Error ? error.message : String(error),
         uptime: Math.round(process.uptime()),
         version: "0.1.0",
         timestamp: new Date().toISOString(),

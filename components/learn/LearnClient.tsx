@@ -1,10 +1,14 @@
 "use client";
 
 import { useCurriculum, useLesson, useCompleteLesson } from "@/lib/hooks/useCurriculum";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { marked } from "marked";
-import { useState, useEffect } from "react";
+import type { CurriculumLesson, CurriculumModule } from "@/lib/types/api";
+
+function parseLessonMarkdown(content: string): string {
+  const parsed = marked.parse(content);
+  return typeof parsed === "string" ? parsed : "";
+}
 
 interface LearnClientProps {
   slug: string;
@@ -12,23 +16,11 @@ interface LearnClientProps {
 }
 
 export function LearnClient({ slug, lessonId }: LearnClientProps) {
-  const router = useRouter();
-  const [htmlContent, setHtmlContent] = useState<string>("");
-
   const { data: curriculum, isLoading: curriculumLoading, isError: curriculumError } = useCurriculum(slug);
   const { data: lesson, isLoading: lessonLoading, isError: lessonError } = useLesson(lessonId);
   const completeMutation = useCompleteLesson(slug);
 
-  // Parse markdown content
-  useEffect(() => {
-    if (lesson?.content) {
-      const parsed = marked.parse(lesson.content);
-      // marked.parse can return a Promise or string depending on options, cast to string
-      Promise.resolve(parsed).then((res) => setHtmlContent(res));
-    } else {
-      setHtmlContent("");
-    }
-  }, [lesson?.content]);
+  const htmlContent = lesson?.content ? parseLessonMarkdown(lesson.content) : "";
 
   if (curriculumLoading || lessonLoading) {
     return (
@@ -61,15 +53,15 @@ export function LearnClient({ slug, lessonId }: LearnClientProps) {
   }
 
   // Flatten curriculum lessons for navigation
-  const flatLessons = curriculum?.modules?.flatMap((m: any) => m.lessons) || [];
-  const currentIdx = flatLessons.findIndex((l: any) => l.id === lessonId);
+  const flatLessons = curriculum?.modules?.flatMap((m: CurriculumModule) => m.lessons) || [];
+  const currentIdx = flatLessons.findIndex((l: CurriculumLesson) => l.id === lessonId);
   const prevLesson = currentIdx > 0 ? flatLessons[currentIdx - 1] : null;
   const nextLesson = currentIdx !== -1 && currentIdx < flatLessons.length - 1 ? flatLessons[currentIdx + 1] : null;
 
   // Active lesson details from the curriculum to get lock/completed status
-  const activeCurriculumLesson = flatLessons.find((l: any) => l.id === lessonId) || {};
-  const isLocked = activeCurriculumLesson.isLocked;
-  const isCompleted = activeCurriculumLesson.isCompleted;
+  const activeCurriculumLesson = flatLessons.find((l: CurriculumLesson) => l.id === lessonId);
+  const isLocked = activeCurriculumLesson?.isLocked ?? false;
+  const isCompleted = activeCurriculumLesson?.isCompleted ?? false;
 
   const handleToggleComplete = async () => {
     try {
@@ -95,13 +87,13 @@ export function LearnClient({ slug, lessonId }: LearnClientProps) {
           </h2>
         </div>
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
-          {curriculum.modules.map((mod: any, mIdx: number) => (
+          {curriculum.modules.map((mod: CurriculumModule, mIdx: number) => (
             <div key={mod.id}>
               <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2.5">
                 M{mIdx + 1}: {mod.title.replace(/^module\s+\d+:\s*/i, "")}
               </h3>
               <div className="flex flex-col gap-1.5">
-                {mod.lessons.map((l: any) => {
+                {mod.lessons.map((l: CurriculumLesson) => {
                   const isActive = l.id === lessonId;
                   return (
                     <Link

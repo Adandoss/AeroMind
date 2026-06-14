@@ -4,6 +4,7 @@ import { useCourse, useEnroll } from "@/lib/hooks/useCourses";
 import { useCurriculum } from "@/lib/hooks/useCurriculum";
 import { formatPrice } from "@/lib/format";
 import Link from "next/link";
+import { getErrorMessage, type CurriculumModule } from "@/lib/types/api";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -65,8 +66,8 @@ export function CourseDetailClient({ slug }: CourseDetailClientProps) {
       } else {
         router.push("/dashboard");
       }
-    } catch (err: any) {
-      setEnrollError(err.message || "Enrollment failed. Please check your active subscription.");
+    } catch (err: unknown) {
+      setEnrollError(getErrorMessage(err, "Enrollment failed. Please check your active subscription."));
     }
   };
 
@@ -108,13 +109,13 @@ export function CourseDetailClient({ slug }: CourseDetailClientProps) {
               <p className="text-sm text-zinc-500">No modules added yet for this course.</p>
             ) : (
               <div className="flex flex-col gap-6">
-                {curriculum.modules.map((mod: any, mIdx: number) => (
+                {curriculum.modules.map((mod: CurriculumModule, mIdx: number) => (
                   <div key={mod.id} className="border-b border-zinc-100 last:border-0 pb-6 last:pb-0">
                     <h3 className="text-sm font-bold text-zinc-900 mb-3 uppercase tracking-wider">
                       Module {mIdx + 1}: {mod.title}
                     </h3>
                     <div className="flex flex-col gap-2.5">
-                      {mod.lessons.map((lesson: any, lIdx: number) => (
+                      {mod.lessons.map((lesson) => (
                         <div
                           key={lesson.id}
                           className="flex items-center justify-between text-sm py-1.5"

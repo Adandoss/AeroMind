@@ -1,6 +1,7 @@
 "use client";
 
 import { useDashboard } from "@/lib/hooks/useDashboard";
+import type { DailyActivity, EnrolledCourseSummary } from "@/lib/types/api";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -42,7 +43,7 @@ export function DashboardClient() {
   const { user, subscription, enrolledCourses, dailyActivity, stats } = dashboard;
 
   // SVG Chart aggregation
-  const maxMinutes = Math.max(...dailyActivity.map((d: any) => d.minutesStudied), 30);
+  const maxMinutes = Math.max(...dailyActivity.map((d: DailyActivity) => d.minutesStudied), 30);
   const chartHeight = 120;
   const chartWidth = 500;
   const paddingLeft = 40;
@@ -156,7 +157,7 @@ export function DashboardClient() {
             })}
 
             {/* Bars */}
-            {dailyActivity.map((day: any, idx: number) => {
+            {dailyActivity.map((day: DailyActivity, idx: number) => {
               const barWidth = 24;
               const spacing = graphWidth / 7;
               const xPos = paddingLeft + idx * spacing + (spacing - barWidth) / 2;
@@ -237,7 +238,7 @@ export function DashboardClient() {
           </div>
         ) : (
           <div className="flex flex-col gap-5">
-            {enrolledCourses.map((c: any) => (
+            {enrolledCourses.map((c: EnrolledCourseSummary) => (
               <div
                 key={c.id}
                 className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 last:border-0 pb-5 last:pb-0 gap-4"

@@ -3,6 +3,7 @@
 import { useAdminCourses, useDeleteCourse } from "@/lib/hooks/useAdmin";
 import Link from "next/link";
 import { formatPrice } from "@/lib/format";
+import { getErrorMessage, type AdminCourse } from "@/lib/types/api";
 import { useState } from "react";
 
 export function AdminCoursesList() {
@@ -17,8 +18,8 @@ export function AdminCoursesList() {
     setDeleteError("");
     try {
       await deleteMutation.mutateAsync(id);
-    } catch (err: any) {
-      setDeleteError(err.message || "Failed to delete course");
+    } catch (err: unknown) {
+      setDeleteError(getErrorMessage(err, "Failed to delete course"));
     }
   };
 
@@ -89,7 +90,7 @@ export function AdminCoursesList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
-                {courses.map((course: any) => (
+                {courses.map((course: AdminCourse) => (
                   <tr key={course.id} className="hover:bg-zinc-50/50 transition-colors">
                     <td className="px-6 py-4.5 font-bold text-zinc-900">
                       {course.title}

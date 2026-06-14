@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
 import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
 import { auth } from "@/lib/server/auth";
 
-export const GET = withLogging(async (req: NextRequest) => {
+export const GET = withLogging(async () => {
   const session = await auth();
   const userId = session?.user?.id;
 

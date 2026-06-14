@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
-import { auth, checkAdmin } from "@/lib/server/auth";
+import { checkAdmin } from "@/lib/server/auth";
 import { AdminCourseSchema } from "@/lib/schemas/courses";
 
-export const GET = withLogging(async (req: NextRequest) => {
+export const GET = withLogging(async () => {
   const authCheck = await checkAdmin();
   if (authCheck.error) {
     return Response.json({ error: authCheck.error }, { status: authCheck.status });
@@ -31,7 +31,7 @@ export const POST = withLogging(async (req: NextRequest) => {
   let body;
   try {
     body = await req.json();
-  } catch (err) {
+  } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 

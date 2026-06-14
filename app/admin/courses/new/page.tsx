@@ -4,6 +4,7 @@ import { CourseForm } from "@/components/admin/CourseForm";
 import { useCreateCourse } from "@/lib/hooks/useAdmin";
 import { AdminCourseInput } from "@/lib/schemas/courses";
 import { useRouter } from "next/navigation";
+import { getErrorMessage } from "@/lib/types/api";
 import { useState } from "react";
 
 export default function NewCoursePage() {
@@ -16,8 +17,8 @@ export default function NewCoursePage() {
     try {
       await createMutation.mutateAsync(data);
       router.push("/admin/courses");
-    } catch (err: any) {
-      setError(err.message || "Failed to create course. Please try again.");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Failed to create course. Please try again."));
     }
   };
 
