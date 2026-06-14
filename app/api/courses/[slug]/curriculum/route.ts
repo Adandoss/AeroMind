@@ -3,6 +3,7 @@ import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
 import { auth } from "@/lib/server/auth";
 import { cacheLife } from "next/cache";
+import { mapCurriculumWithLessonStatus } from "@/lib/curriculum-logic";
 
 // Cached helper function to fetch structure of course curriculum
 async function getCourseCurriculumCached(slug: string) {
@@ -94,16 +95,10 @@ export const GET = withLogging(async (req: NextRequest, ctx: { params: Promise<{
 
   const hasAccess = isEnrolled || isAdmin;
 
-  const modulesWithStatus = curriculum.modules.map((m) => ({
-    id: m.id,
-    title: m.title,
-    order: m.order,
-    lessons: m.lessons.map((l) => ({
-      ...l,
-      isCompleted: completedLessonIds.has(l.id),
-      isLocked: !l.isFreePreview && !hasAccess,
-    })),
-  }));
+  const modulesWithStatus = mapCurriculumWithLessonStatus(curriculum.modules, {
+    hasAccess,
+    completedLessonIds,
+  });
 
   return Response.json({
     courseId: curriculum.courseId,
