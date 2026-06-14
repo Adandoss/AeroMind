@@ -3,9 +3,9 @@ import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
 import { CoursesQuerySchema } from "@/lib/schemas/courses";
 import type { Category } from "@/lib/types/enums";
-import type { CourseWhereFilter } from "@/lib/types/api";
 import { auth } from "@/lib/server/auth";
 import { cacheLife } from "next/cache";
+import { buildCourseWhereFilter } from "@/lib/courses-logic";
 
 // Helper function with 'use cache' directive for catalog data caching
 async function getCoursesCached(params: {
@@ -22,28 +22,7 @@ async function getCoursesCached(params: {
   const { q, category, price, rating, page, limit } = params;
   const skip = (page - 1) * limit;
 
-  const where: CourseWhereFilter = { published: true };
-  
-  if (q) {
-    where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-    ];
-  }
-  
-  if (category) {
-    where.category = category;
-  }
-  
-  if (price === "free") {
-    where.priceCents = 0;
-  } else if (price === "paid") {
-    where.priceCents = { gt: 0 };
-  }
-  
-  if (rating) {
-    where.rating = { gte: rating };
-  }
+  const where = buildCourseWhereFilter({ q, category, price, rating });
 
   const [courses, totalCount] = await Promise.all([
     prisma.course.findMany({
