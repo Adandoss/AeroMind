@@ -3,6 +3,7 @@ import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
 import { auth } from "@/lib/server/auth";
 import { EnrollmentCreateSchema } from "@/lib/schemas/enrollments";
+import { canStudentEnroll } from "@/lib/enrollment-logic";
 
 export const POST = withLogging(async (req: NextRequest) => {
   const session = await auth();
@@ -68,11 +69,13 @@ export const POST = withLogging(async (req: NextRequest) => {
       },
     });
 
-    if (!activeSubscription) {
-      return Response.json(
-        { error: "Active subscription required to enroll in this course. Please visit pricing page." },
-        { status: 403 }
-      );
+    const enrollmentCheck = canStudentEnroll({
+      isAdmin,
+      activeSubscription,
+    });
+
+    if (!enrollmentCheck.allowed) {
+      return Response.json({ error: enrollmentCheck.reason }, { status: 403 });
     }
   }
 
