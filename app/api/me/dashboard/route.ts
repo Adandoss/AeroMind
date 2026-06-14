@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/server/db";
 import { withLogging } from "@/lib/server/request-logger";
 import { auth } from "@/lib/server/auth";
+import {
+  aggregateProgressIntoDailyActivity,
+  buildDailyActivityBuckets,
+  computeCourseProgressPercent,
+} from "@/lib/dashboard-logic";
 
 export const GET = withLogging(async () => {
   const session = await auth();
@@ -72,7 +77,7 @@ export const GET = withLogging(async () => {
       instructor: e.course.instructor,
       completedLessons,
       totalLessons,
-      progressPercent: totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0,
+      progressPercent: computeCourseProgressPercent(completedLessons, totalLessons),
     };
   });
 
@@ -93,34 +98,15 @@ export const GET = withLogging(async () => {
     },
   });
 
-  // Initialize weekday buckets (Mon-Sun style names matching the dates)
-  const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const dailyActivity = [];
+  const dailyActivity = buildDailyActivityBuckets();
 
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    const dateString = date.toISOString().split("T")[0]; // YYYY-MM-DD
-    const dayOfWeek = date.getDay();
-
-    dailyActivity.push({
-      dayName: weekdayNames[dayOfWeek],
-      date: dateString,
-      lessonsCompleted: 0,
-      minutesStudied: 0,
-    });
-  }
-
-  // Aggregate stats into the daily activity buckets
-  for (const progressItem of recentProgress) {
-    // Convert to local date string matching our buckets
-    const localDateStr = progressItem.completedAt.toISOString().split("T")[0];
-    const bucket = dailyActivity.find((day) => day.date === localDateStr);
-    if (bucket) {
-      bucket.lessonsCompleted += 1;
-      bucket.minutesStudied += progressItem.lesson.durationMin;
-    }
-  }
+  const aggregatedActivity = aggregateProgressIntoDailyActivity(
+    dailyActivity,
+    recentProgress.map((p) => ({
+      completedAt: p.completedAt,
+      durationMin: p.lesson.durationMin,
+    })),
+  );
 
   // Calculate totals
   const totalCompletedLessonsAllTime = enrollments.reduce((sum, e) => sum + e._count.lessonProgress, 0);
@@ -142,7 +128,7 @@ export const GET = withLogging(async () => {
         }
       : null,
     enrolledCourses,
-    dailyActivity,
+    dailyActivity: aggregatedActivity,
     stats: {
       totalCompletedLessonsAllTime,
       totalHoursStudiedAllTime: Math.round((totalMinutesStudiedAllTime / 60) * 10) / 10,
