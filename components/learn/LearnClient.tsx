@@ -3,6 +3,7 @@
 import { useCurriculum, useLesson, useCompleteLesson } from "@/lib/hooks/useCurriculum";
 import Link from "next/link";
 import { marked } from "marked";
+import { stripModuleNumberPrefix } from "@/lib/format";
 import type { CurriculumLesson, CurriculumModule } from "@/lib/types/api";
 
 function parseLessonMarkdown(content: string): string {
@@ -90,7 +91,7 @@ export function LearnClient({ slug, lessonId }: LearnClientProps) {
           {curriculum.modules.map((mod: CurriculumModule, mIdx: number) => (
             <div key={mod.id}>
               <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2.5">
-                M{mIdx + 1}: {mod.title.replace(/^module\s+\d+:\s*/i, "")}
+                M{mIdx + 1}: {stripModuleNumberPrefix(mod.title)}
               </h3>
               <div className="flex flex-col gap-1.5">
                 {mod.lessons.map((l: CurriculumLesson) => {

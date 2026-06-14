@@ -2,7 +2,7 @@
 
 import { useCourse, useEnroll } from "@/lib/hooks/useCourses";
 import { useCurriculum } from "@/lib/hooks/useCurriculum";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, stripModuleNumberPrefix } from "@/lib/format";
 import Link from "next/link";
 import { getErrorMessage, type CurriculumModule } from "@/lib/types/api";
 import { useState } from "react";
@@ -112,7 +112,7 @@ export function CourseDetailClient({ slug }: CourseDetailClientProps) {
                 {curriculum.modules.map((mod: CurriculumModule, mIdx: number) => (
                   <div key={mod.id} className="border-b border-zinc-100 last:border-0 pb-6 last:pb-0">
                     <h3 className="text-sm font-bold text-zinc-900 mb-3 uppercase tracking-wider">
-                      Module {mIdx + 1}: {mod.title}
+                      Module {mIdx + 1}: {stripModuleNumberPrefix(mod.title)}
                     </h3>
                     <div className="flex flex-col gap-2.5">
                       {mod.lessons.map((lesson) => (
